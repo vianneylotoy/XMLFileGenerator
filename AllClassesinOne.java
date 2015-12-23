@@ -1,0 +1,407 @@
+/*
+/Servlet activator
+/activator.java
+*/
+package osgiservletrequirement;
+
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+
+
+public class Activator implements BundleActivator {
+
+	private HttpServiceTracker serviceTracker;
+
+    public void start(BundleContext context) throws Exception {
+            serviceTracker = new HttpServiceTracker(context);
+            serviceTracker.open();
+    }
+
+    public void stop(BundleContext context) throws Exception {
+            serviceTracker.close();
+            serviceTracker = null;
+    }
+
+}
+
+
+/*
+/Servlet HpppServiceTracker
+/Httpservicetracker.java
+package osgiservletrequirement;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.http.HttpService;
+import org.osgi.util.tracker.ServiceTracker;
+
+public class HttpServiceTracker extends ServiceTracker {
+
+	public HttpServiceTracker(BundleContext context) {
+		super(context, HttpService.class.getName(), null);
+	}
+	
+	public Object addingService(ServiceReference reference) {
+        HttpService httpService = (HttpService) super.addingService(reference);
+        if (httpService == null)
+                return null;
+
+        try {
+                System.out.println("Registering servlet at /servlet");
+                httpService.registerServlet("/servlet", new OsgiRequirement(), null,
+                                null);
+                
+                System.out.println("Registering servlet at /sendrequest");
+                httpService.registerServlet("/sendrequest", new Osgirequest(), null,
+                                null);
+        } catch (Exception e) {
+                e.printStackTrace();
+        }
+
+        return httpService;
+}
+
+public void removedService(ServiceReference reference, Object service) {
+    HttpService httpService = (HttpService) service;
+
+    System.out.println("Unregistering /servlet");
+    httpService.unregister("/servlet");
+    
+    System.out.println("Unregistering /sendrequest");
+    httpService.unregister("/sendrequest");
+
+    super.removedService(reference, service);
+  }
+
+}
+
+
+
+/*
+/ Servlet code
+/servlet.java
+*/
+package osgiservletrequirement;
+
+//import java.io.File;
+import java.io.File;
+import java.io.FileOutputStream;
+//import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+
+import javax.servlet.ServletException;
+//import javax.xml.parsers.*;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+//import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+//import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+
+
+
+
+
+
+
+//import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+//import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
+//import org.w3c.dom.Text;
+//import org.xml.sax.SAXException;
+import org.xml.sax.SAXException;
+
+public class OsgiRequirement extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		//resp.setContentType("text/html");
+		
+		  PrintWriter out = resp.getWriter();
+		  BuildXml();
+		  out.println("fichier xml cree correctement!");
+		
+		 
+          		
+	}
+	
+	public void BuildXml() {
+	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	    Document document = null;
+	    try {
+	      DocumentBuilder builder = factory.newDocumentBuilder();
+	      document = builder.newDocument();
+	    }catch (ParserConfigurationException parserException) {
+	      parserException.printStackTrace();
+	    }
+	    
+	  //cette methode cree la racine du noeud
+		  Element root = document.createElement("requirement");
+		  //ajout de la derniere feuille du noeud specifie.
+		  document.appendChild(root);
+		  document.createTextNode("requirement");
+		  
+		  //creation du premier noeud specifie.
+		  Element child1 = document.createElement("specification");
+		  root.appendChild(child1);
+		  child1.appendChild(document.createTextNode("camera specification"));
+		  
+		  //creation du deuxieme noeud specifie.
+		  Element child2= document.createElement("specification1");
+		  root.appendChild(child2);
+		  child2.appendChild(document.createTextNode("customer specification"));
+ 		  //ajout de la premiere branche du deuxieme noeud specifie.
+		  Element element1 = document.createElement("satisfy");
+		  child2.appendChild(element1);
+		  Element element11= document.createElement("Environment");
+		  element1.appendChild(element11);
+		  //ajout de la description de la premiere branche
+		  Text text1 = document.createTextNode("The system shall be capable of "
+		  		+ "detecting intruders 24 hours per day, 7 days per week under all "
+		  		+ "weather conditions");
+		  element11.appendChild(text1);
+		  //ajout de l'identifiant de la premiere branche
+		  Element chilO = document.createElement("Id");
+		  chilO.setAttribute("Id", "Operating Environment");
+		  chilO.appendChild(document.createTextNode("S1"));
+		  element11.appendChild(chilO);
+		  //ajout de la premiere feuille de la premiere branche
+		  Element childW = document.createElement("Operation");
+		  element11.appendChild(childW);
+		  //ajout de la description de la premiere feuille de la premiere branche
+		  Text textW = document.createTextNode("The system shall be capable of detecting"
+		  		                        + "intruders under all weather conditions");
+		  childW.appendChild(textW);
+		  //ajout de la deuxieme feuille de la premiere branche
+		  Element childHD = document.createElement("Operation24_sur_7");
+		  element11.appendChild(childHD);
+		  //ajout de la description de la deuxieme feuille de la premiere branche
+		  Text textHD = document.createTextNode("The system shall be capable of detecting"
+                  + "intruders 24 hours per day, 7 days per week");
+		  childHD.appendChild(textHD);
+		  //ajout de l'identifiant de la premiere feuille de la premiere branche
+		  Element chilIdW = document.createElement("Id");
+		  chilIdW.setAttribute("Id", "Weather Operation");
+		  chilIdW.appendChild(document.createTextNode("S1.1"));
+		  childW.appendChild(chilIdW);
+		  //ajout de l'identifiant de la deuxieme feuille de la premiere branche
+		  Element chilIdHD = document.createElement("Id");
+		  chilIdHD.setAttribute("Id", "24/7 Operation");
+		  chilIdW.appendChild(document.createTextNode("S1.2"));
+		  childHD.appendChild(chilIdHD);
+		  //ajout de la premiere sous branche de la 1re et 2e feuille de la premiere branche
+		  Element childSD = document.createElement("devivedFrom");
+		  Element childSD1 = document.createElement("Sensor_Decision");
+		  childSD.appendChild(childSD1);
+		  childW.appendChild(childSD);
+		  childHD.appendChild(childSD);
+		  //ajout de l'identifiant de la premiere sous branche de la 1re et 2e feuille de la premiere branche
+		  Element chilIdSD11 = document.createElement("Id");
+		  chilIdSD11.setAttribute("Id", "Sensor Decision");
+		  chilIdSD11.appendChild(document.createTextNode("D1"));
+		  childSD1.appendChild(chilIdSD11);
+		  //ajout du lien de la premiere sous branche de la 1re et 2e feuille de la premiere branche
+		  //Comment commentSD = doc.createComment("derivedFrom");
+		  //childSD.appendChild(commentSD);
+		  //ajout de la description de la premiere sous branche de la 1re et 2e feuille de la premiere branche 
+		  Text textSD = document.createTextNode("The system shall use cameras to detect intruders");
+		  childSD1.appendChild(textSD);
+		  //ajout de la deuxieme branche du deuxieme noeud specifie.
+		  Element element2 = document.createElement("Availability");
+		  child2.appendChild(element2);
+		  //ajout de la description de la deuxieme branche
+		  Text textE2 = document.createTextNode("The system shall exhibit "
+			  		+ " an operational availability (Ao) of 0.999"
+			  		+ " over its installed lifetime");
+			  element2.appendChild(textE2);
+	      //ajout de l'identifiant de la deuxieme branche	  
+		  Element chilA = document.createElement("Id");
+		  chilA.setAttribute("Id", "Availability");
+		  chilA.appendChild(document.createTextNode("S2"));
+		  element2.appendChild(chilA);
+		  
+		  //creation du troisieme noeud specifie.	  
+		  Element child3 = document.createElement("System_Specification");
+		  root.appendChild(child3);
+		  child3.appendChild(document.createTextNode("System specification"));
+		  root.appendChild(child3);
+		  
+	    // Enregistrement du fichier XML
+	    try {
+	    	
+	      //Creation de la source du document DOM
+	      Source xmlSource = new DOMSource(document);
+
+	      // creation de StreamResult pour la transformation result
+	      Result result = new StreamResult(new FileOutputStream("File-XML/requirement.xml"));
+
+	      // creation TransformerFactory
+	      TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+	      // creation Transformer pour la transformation
+	      Transformer transformer = transformerFactory.newTransformer();
+
+	      transformer.setOutputProperty("indent", "yes");
+
+	      // transformation et livraison du contenu au client
+	      transformer.transform(xmlSource, result);
+	    }
+
+	    // Execution exception de creation du TransformerFactory
+	    catch (TransformerFactoryConfigurationError factoryError) {
+	      System.err.println("Erreur de creation du " + "TransformerFactory");
+	      factoryError.printStackTrace();
+	    }catch (TransformerException transformerError) {
+	      System.err.println("Erreur transformation du document!");
+	      transformerError.printStackTrace();
+	    }    catch (IOException ioException) {
+	      ioException.printStackTrace();
+	    }
+	  }    
+	
+						
+
+	
+}
+
+
+/*
+/ android code
+/HttpGet_Activity.java
+*/
+
+package ufc.deptinfo.bt.coursosgi_382_androidservletconnexion;
+ 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLConnection;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+ 
+public class HttpGetServletActivity extends Activity implements OnClickListener{
+    Button button, append;
+    TextView outputText;
+    EditText requirement, subrequirement, define;
+ 
+//  public static final String URL = "http://10.0.2.2:8080/HttpGetServlet/HelloWorldServlet";
+    public static final String URL = "http://10.0.2.2:8383/servlet";
+    
+    
+ 
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_http_get_servlet);
+ 
+        append = (Button) findViewById(R.id.buttonxml);
+        requirement = (EditText) findViewById(R.id.requirement);
+        subrequirement = (EditText) findViewById(R.id.subrequire);
+        define = (EditText) findViewById(R.id.define);
+        findViewsById();
+        
+ 
+        button.setOnClickListener(this);
+        append.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(HttpGetServletActivity.this, AppendXml.class);
+				// objet qui vas nous permettre de passe des variables ici la vari
+				Bundle objetbunble = new Bundle();
+				objetbunble.putString("maclef",requirement.getText().toString());
+				//objetbunble.putString("pwd",subrequirement.getText().toString());
+				//objetbunble.putString("motdp",define.getText().toString());
+				// on passe notre objet a notre activities
+				intent.putExtras(objetbunble );
+				// on appelle notre activité
+				startActivity(intent);
+			}
+		});
+    }
+ 
+    private void findViewsById() {
+        button = (Button) findViewById(R.id.button);
+        outputText = (TextView) findViewById(R.id.outputTxt);
+    }
+ 
+    public void onClick(View view) {
+        GetXMLTask task = new GetXMLTask();
+        task.execute(new String[] { URL });
+    }
+ 
+    private class GetXMLTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... urls) {
+            String output = null;
+            for (String url : urls) {
+                output = getOutputFromUrl(url);
+            }
+            return output;
+        }
+ 
+        private String getOutputFromUrl(String url) {
+            String output = null;
+            try {
+                DefaultHttpClient httpClient = new DefaultHttpClient();
+                HttpGet httpGet = new HttpGet(url);
+ 
+                HttpResponse httpResponse = httpClient.execute(httpGet);
+                HttpEntity httpEntity = httpResponse.getEntity();
+                output = EntityUtils.toString(httpEntity);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return output;
+        }
+ 
+        @Override
+        protected void onPostExecute(String output) {
+            outputText.setText(output);
+        }
+        
+        
+            }
+}
